@@ -6,7 +6,10 @@ import quizRouter from './routes/quiz';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 
 app.use('/api/tables', queryRouter);

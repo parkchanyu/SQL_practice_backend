@@ -21,7 +21,10 @@ const pool = mariadb.createPool({
 });
 
 // 미들웨어 설정
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json());
 
 // 라우트 설정
