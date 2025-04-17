@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import tablesRouter from './routes/tables';
-import databasesRouter from './routes/databases';
+import { queryRouter } from './routes/query.routes';
+import { databaseRouter } from './routes/database.routes';
 import quizRouter from './routes/quiz';
 
 const app = express();
@@ -9,8 +9,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/tables', tablesRouter);
-app.use('/api/databases', databasesRouter);
-app.use('/api', quizRouter);
+app.use('/api/tables', queryRouter);
+app.use('/api/databases', databaseRouter);
+app.use('/api/quiz', quizRouter);
 
 export default app; 

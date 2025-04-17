@@ -1,8 +1,8 @@
 import express from 'express';
-import mariadb from 'mariadb';
+import mariadb, { PoolConnection } from 'mariadb';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import databaseRoutes from './routes/databaseRoutes';
+import { databaseRouter } from './routes/database.routes';
 import quizRouter from './routes/quiz';
 
 dotenv.config();
@@ -25,16 +25,16 @@ app.use(cors());
 app.use(express.json());
 
 // 라우트 설정
-app.use('/api', databaseRoutes);
+app.use('/api/databases', databaseRouter);
 app.use('/api/quiz', quizRouter);
 
 // 데이터베이스 연결 테스트
 pool.getConnection()
-  .then(conn => {
+  .then((conn: PoolConnection) => {
     console.log('MariaDB 연결 성공');
     conn.release();
   })
-  .catch(err => {
+  .catch((err: Error) => {
     console.error('MariaDB 연결 실패:', err);
   });
 
