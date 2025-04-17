@@ -22,7 +22,9 @@ const pool = mariadb.createPool({
 
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
-  'https://www.nexus.ai.kr'
+  'https://www.nexus.ai.kr',
+  'https://nexus.ai.kr',
+  'https://web-sql-practice-m8o060qr089796e0.sel4.cloudtype.app'
 ];
 
 // 미들웨어 설정
