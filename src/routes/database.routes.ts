@@ -65,9 +65,9 @@ router.get('/tables/:tableName/structure', async (req, res) => {
 
 // 테이블 생성
 router.post('/tables', async (req, res) => {
-  const { name, columns } = req.body;
+  const { tableName, columns } = req.body;
 
-  if (!name || !columns || !Array.isArray(columns)) {
+  if (!tableName || !columns || !Array.isArray(columns)) {
     return res.status(400).json({ error: '테이블 이름과 컬럼 정보가 필요합니다' });
   }
 
@@ -78,12 +78,39 @@ router.post('/tables', async (req, res) => {
       `${col.name} ${col.type}${col.nullable ? '' : ' NOT NULL'}${col.primary ? ' PRIMARY KEY' : ''}`
     ).join(', ');
 
-    await conn.query(`CREATE TABLE IF NOT EXISTS ${name} (${columnDefinitions})`);
+    await conn.query(`CREATE TABLE IF NOT EXISTS ${tableName} (${columnDefinitions})`);
     conn.release();
     res.status(201).json({ message: '테이블이 생성되었습니다' });
   } catch (error) {
     console.error('테이블 생성 실패:', error);
     res.status(500).json({ error: '테이블 생성에 실패했습니다' });
+  }
+});
+
+// 테이블에 데이터 추가
+router.post('/tables/:tableName/data', async (req, res) => {
+  const { tableName } = req.params;
+  const { data } = req.body;
+
+  if (!data || typeof data !== 'object') {
+    return res.status(400).json({ error: '데이터가 필요합니다' });
+  }
+
+  try {
+    const conn = await pool.getConnection() as PoolConnection;
+    try {
+      const columns = Object.keys(data);
+      const values = Object.values(data);
+      const query = `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${values.map(() => '?').join(', ')})`;
+      
+      await conn.query(query, values);
+      res.status(201).json({ message: '데이터가 성공적으로 추가되었습니다' });
+    } finally {
+      conn.release();
+    }
+  } catch (error) {
+    console.error('데이터 추가 실패:', error);
+    res.status(500).json({ error: '데이터 추가에 실패했습니다' });
   }
 });
 
