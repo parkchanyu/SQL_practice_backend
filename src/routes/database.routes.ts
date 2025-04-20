@@ -18,31 +18,44 @@ const pool = mariadb.createPool({
 
 // 테이블 목록 조회
 router.get('/tables', async (req, res) => {
+  let conn;
   try {
-    const conn = await pool.getConnection() as PoolConnection;
+    conn = await pool.getConnection();
     const rows = await conn.query('SHOW TABLES');
-    conn.release();
     res.json(rows);
   } catch (error) {
     console.error('테이블 목록 조회 실패:', error);
     res.status(500).json({ error: '테이블 목록을 가져오는데 실패했습니다' });
+  } finally {
+    if (conn) {
+      try {
+        await conn.release();
+      } catch (releaseError) {
+        console.error('연결 해제 실패:', releaseError);
+      }
+    }
   }
 });
 
 // 테이블 데이터 조회
 router.get('/tables/:tableName/data', async (req, res) => {
-  const { tableName } = req.params;
+  let conn;
   try {
-    const conn = await pool.getConnection() as PoolConnection;
-    try {
-      const rows = await conn.query(`SELECT * FROM ${tableName}`);
-      res.json(rows);
-    } finally {
-      conn.release();
-    }
+    conn = await pool.getConnection();
+    const { tableName } = req.params;
+    const rows = await conn.query(`SELECT * FROM ${tableName}`);
+    res.json(rows);
   } catch (error) {
     console.error('테이블 데이터 조회 실패:', error);
     res.status(500).json({ error: '테이블 데이터를 가져오는데 실패했습니다' });
+  } finally {
+    if (conn) {
+      try {
+        await conn.release();
+      } catch (releaseError) {
+        console.error('연결 해제 실패:', releaseError);
+      }
+    }
   }
 });
 

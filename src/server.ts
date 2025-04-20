@@ -44,17 +44,33 @@ app.use(express.json());
 app.use('/api/databases', databaseRouter);
 app.use('/api/quiz', quizRouter);
 
-// 데이터베이스 연결 테스트
-pool.getConnection()
-  .then((conn: PoolConnection) => {
-    console.log('MariaDB 연결 성공');
-    conn.release();
-  })
-  .catch((err: Error) => {
-    console.error('MariaDB 연결 실패:', err);
-  });
+// 데이터베이스 연결 후 서버 시작
+const startServer = async () => {
+  try {
+    // 데이터베이스 연결 테스트
+    const conn = await pool.getConnection();
+    console.log('데이터베이스 연결 테스트 성공');
+    await conn.release();
 
-// 서버 시작
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-}); 
+    // 서버 시작
+    app.listen(port, () => {
+      console.log(`서버가 포트 ${port}에서 실행 중입니다`);
+    });
+
+    // 주기적으로 연결 풀 상태 확인
+    setInterval(async () => {
+      try {
+        const testConn = await pool.getConnection();
+        await testConn.release();
+      } catch (error) {
+        console.error('연결 풀 상태 확인 실패:', error);
+      }
+    }, 60000); // 1분마다 확인
+
+  } catch (err) {
+    console.error('서버 시작 실패:', err);
+    process.exit(1);
+  }
+};
+
+startServer(); 

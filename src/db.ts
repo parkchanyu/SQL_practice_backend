@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import mysql from 'mysql2/promise';
+import mariadb from 'mariadb';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -10,15 +10,21 @@ const MONGODB_USERNAME = process.env.MONGODB_USERNAME;
 const MONGODB_PASSWORD = process.env.MONGODB_PASSWORD;
 
 // MariaDB 연결 풀 생성
-export const pool = mysql.createPool({
+export const pool = mariadb.createPool({
   host: process.env.MARIADB_HOST || 'localhost',
-  port: parseInt(process.env.MARIADB_PORT || '3306'),
+  port: Number(process.env.MARIADB_PORT) || 3306,
   user: process.env.MARIADB_USER || 'root',
-  password: process.env.MARIADB_PASSWORD,
-  database: process.env.MARIADB_DATABASE,
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0
+  password: process.env.MARIADB_PASSWORD || '',
+  database: process.env.MARIADB_DATABASE || 'sql_practice',
+  connectionLimit: 10,  // 연결 풀 크기 증가
+  acquireTimeout: 30000,  // 연결 획득 타임아웃 증가
+  idleTimeout: 60000,  // 유휴 연결 타임아웃
+  connectTimeout: 10000,  // 연결 타임아웃
+  maxAllowedPacket: 16777216,  // 최대 패킷 크기
+  multipleStatements: true,  // 다중 쿼리 허용
+  connectionAttributes: {
+    program_name: 'sql_practice'
+  }
 });
 
 const connectDB = async () => {
